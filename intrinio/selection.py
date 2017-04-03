@@ -1,30 +1,44 @@
-import os
-import _data as data
-import jobs
+import core
 from _state_manager import State
 
 
 def screen_company(state, ticker):
-    if not data.adequate_size(ticker):
-        return False
-        
-    if not data.strong_financial_condition(ticker):
+
+    if not core.strong_financial_condition(ticker):
         return False
     
-    jobs.update_earnings_data(state, ticker)
-
-    if not data.earnings_stability(ticker):
+    if not core.earnings_stability(ticker, state):
         return False
+    
+    # if not core.dividend_record(ticker, state):
+    #     return False
+    
+    if not core.earnings_growth(ticker):
+        return False
+    
+    if not core.moderate_price_to_earnings(ticker, state):
+        return False
+    
+    if not core.moderate_price_to_assets(ticker, state):
+        return False
+    
+    return True
 
-count = 0
-total = 0
-with State() as state:
-    for ticker in next(os.walk(os.path.join(data.get_script_dir(), "data/companies")))[1]:
-        total = total + 1
-        
-        if screen_company(state, ticker):
-            print(ticker)
-            count = count + 1
-            break
 
-print(str(count) + " / " + str(total))
+def get_selection():
+    results = []
+    with State() as state:
+        for ticker in core.get_ticker_list():                        
+            if screen_company(state, ticker):
+                results.append(ticker)
+
+            if not state.is_under_request_limit():
+                break
+    return results
+
+
+
+# ToDo:
+# - use last price instead of close price
+# - use updated calculation to check marketcap (in case existing company falls below threshold)
+# - Update basiceps if latest data point is more than a year old
