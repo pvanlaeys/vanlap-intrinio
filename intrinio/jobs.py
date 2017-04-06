@@ -7,6 +7,7 @@ import selection
 import _data as data
 import _requests as req
 from _state_manager import State
+from local_settings import GMAIL_USERNAME, GMAIL_PASSWORD
 
 
 def build_company_list(endpoint, params=None):
@@ -64,6 +65,19 @@ def update_next_company_chunk():
         state.set_last_ticker_index(ticker_index)
 
 
+def send_email(html_content):
+    msg = MIMEText(html_content, 'html')
+    msg['Subject'] = datetime.date.today().isoformat() + " intrinio update"
+    msg['From'] = "pvanlaeys@gmail.com"
+    msg['To'] = "pvanlaeys@gmail.com"
+            
+    with smtplib.SMTP('smtp.gmail.com', 587) as s:
+        s.ehlo()
+        s.starttls()
+        s.login(GMAIL_USERNAME, GMAIL_PASSWORD)
+        s.send_message(msg)    
+        
+
 def main():
     weekday = datetime.datetime.today().weekday()
     if weekday == 6:  # Sunday
@@ -83,6 +97,11 @@ def main():
         data.write_list_to_file(
             os.path.join("past_selection", datetime.date.today().isoformat() + ".txt"), 
             matches)
+        html = "<html><body>"
+        for ticker in matches:
+            html = html + "<div style='color:green;'>" + ticker + " (+)</div>"
+        html = html + "</body></html>"
+        send_email(html)
 
         if len(add_list) > 0 or len(remove_list) > 0:              
             html = "<html><body>"
@@ -91,12 +110,6 @@ def main():
             for ticker in add_list:
                 html = html + "<div style='color:green;'>" + ticker + " (+)</div>"
             html = html + "</body></html>"
-            msg = MIMEText(html, 'html')
-            msg['Subject'] = "my intrinio update"
-            msg['From'] = "pvanlaeys@gmail.com"
-            msg['To'] = "pvanlaeys@gmail.com"
-            s = smtplib.SMTP('localhost')
-            s.send_message(msg)
-            s.quit()
+            send_email(html)
 
 main()

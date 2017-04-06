@@ -32,6 +32,9 @@
     <Compile Include="intrinio\jobs.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="intrinio\local_settings.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="intrinio\selection.py">
       <SubType>Code</SubType>
     </Compile>
