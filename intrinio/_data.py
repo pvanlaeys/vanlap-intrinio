@@ -155,3 +155,15 @@ def get_earnings_average(ticker, is_start_average=False):
             return None
         total_eps = total_eps + eps
     return total_eps / 3
+
+
+def read_list_from_file(child_path):
+    with open(os.path.join(get_script_dir(), "data", child_path)) as f:        
+        content = f.readlines()    
+    return [x.strip() for x in content]
+
+
+def write_list_to_file(child_path, selection):    
+    with open(os.path.join(get_script_dir(), "data", child_path), 'w') as file:
+        for ticker in selection:
+            file.write(ticker + "\n")

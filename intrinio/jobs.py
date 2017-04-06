@@ -1,6 +1,7 @@
 import os
 import datetime
-import xml.etree.ElementTree as ET
+import smtplib
+from email.mime.text import MIMEText
 
 import selection
 import _data as data
@@ -74,6 +75,28 @@ def main():
     else:
         matches = selection.get_selection()
 
+        last_selection = data.read_list_from_file("current_selection.txt")
+        add_list = set(matches).difference(last_selection)
+        remove_list = set(last_selection).difference(matches)
+
+        data.write_list_to_file("current_selection.txt", matches)
+        data.write_list_to_file(
+            os.path.join("past_selection", datetime.date.today().isoformat() + ".txt"), 
+            matches)
+
+        if len(add_list) > 0 or len(remove_list) > 0:              
+            html = "<html><body>"
+            for ticker in remove_list:
+                html = html + "<div style='color:darkred;'>" + ticker + " (-)</div>"
+            for ticker in add_list:
+                html = html + "<div style='color:green;'>" + ticker + " (+)</div>"
+            html = html + "</body></html>"
+            msg = MIMEText(html, 'html')
+            msg['Subject'] = "my intrinio update"
+            msg['From'] = "pvanlaeys@gmail.com"
+            msg['To'] = "pvanlaeys@gmail.com"
+            s = smtplib.SMTP('localhost')
+            s.send_message(msg)
+            s.quit()
 
 main()
-print(selection.get_selection())

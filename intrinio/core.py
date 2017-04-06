@@ -9,9 +9,7 @@ import _requests as req
 
 
 def get_ticker_list():
-    with open(os.path.join(data.get_script_dir(), "data/ticker_list.txt")) as f:
-        content = f.readlines()    
-    return [x.strip() for x in content]
+    return data.read_list_from_file("ticker_list.txt")    
 
 
 def get_current_price(ticker, state=None):    
